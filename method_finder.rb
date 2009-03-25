@@ -2,17 +2,17 @@ require 'set'
 
 module MethodFinder
   
-  # finds object selector by result
+  # finds object selector by example
   # supports only 0-arity methods
   # METHODS_FOR_REJECT = %w[id type clone new initialize dup freeze send taint extend include eval]
   
-  def suggest_method(result, all = false)
+  def suggest_method(example, all = false)
     # filter dangerous methods too
     zero_arity_methods = MethodFinder.zero_arity_methods(self)
     
     find_block = Proc.new do |m|
       begin
-        self.send(m) == result 
+        self.send(m) == example 
         
       # methods in C with variable arguments size
       rescue ArgumentError
@@ -28,20 +28,20 @@ module MethodFinder
     end
   end
   
-  # results is a hash with object -> result pairs
-  def self.suggest_method(results, all = false)
+  # examples is a hash with object -> example pairs
+  def self.suggest_method(examples, all = false)
     
     # finds intersection of all suitable methods
-    suggested_methods = results.inject([]) do |methods, pair|
-      object, result = pair
+    suggested_methods = examples.inject([]) do |methods, pair|
+      object, example = pair
             
-      methods << object.suggest_method(result, :all).to_set
+      methods << object.suggest_method(example, :all).to_set
     end.inject { |intersection, set| intersection & set }
         
     unless all
       suggested_methods.first
     else
-      suggested_methods
+      suggested_methods.to_a
     end
   end
   

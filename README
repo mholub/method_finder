@@ -1,0 +1,34 @@
+Squeak method finder analogue by example for ruby.
+
+http://wiki.squeak.org/squeak/1916
+
+Currently supports only zero-arity selectors (ex: upcase, not [1])
+
+Examples:
+
+  irb(main):001:0> "hello".suggest_method("HELLO")
+  => "upcase"
+  
+  irb(main):002:0> "hello".suggest_method("Hello")
+  => "capitalize"
+  
+  irb(main):007:0> Date.parse('13 Sep 2009').suggest_method(256) # Programmer's Day
+  => "yday"
+  
+  irb(main):009:0> 1.01.suggest_method(1, :all)
+  => ["prec_i", "round", "truncate", "to_i", "to_int", "floor"]
+  
+  irb(main):010:0> 1.01.suggest_method(2, :all)
+  => ["ceil"]
+  
+MethodFinder can use several results for find method. Examples:
+
+  irb(main):011:0> MethodFinder.suggest_method(-1.01 => -2, 1.01 => 1)
+  => "floor"
+
+  irb(main):001:0> MethodFinder.suggest_method({-1.01 => -1, 1.01 => 1}, :all)
+  => ["to_int", "round", "to_i", "prec_i", "truncate"]
+  
+TODO: 
+
+  think about possible improvements
