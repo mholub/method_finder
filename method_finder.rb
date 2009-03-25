@@ -6,22 +6,29 @@ module MethodFinder
   # supports only 0-arity methods
   # METHODS_FOR_REJECT = %w[id type clone new initialize dup freeze send taint extend include eval]
   
-  def suggest_method(example)
+  def suggest_method(example, *args)
     # filter dangerous methods too
-    zero_arity_methods = MethodFinder.zero_arity_methods(self)
+    possible_methods = MethodFinder.methods_by_arity(self, args.length)
     
     find_block = Proc.new do |m|
       begin
-        self.send(m) == example 
+        test_object = (self.clone rescue self)
         
+        if args.length == 0
+          test_object.send(m) == example 
+        else
+          test_object.send(m, *args) == example
+        end
       # methods in C with variable arguments size
       rescue ArgumentError
       # methods with block
       rescue LocalJumpError
+      rescue TypeError
+      rescue NoMethodError
       end
     end
     
-    result = zero_arity_methods.select &find_block
+    result = possible_methods.select &find_block
     if result.length < 2
       result.first
     else
@@ -30,13 +37,13 @@ module MethodFinder
   end
   
   # examples is a hash with object -> example pairs
-  def self.suggest_method(examples)
+  def self.suggest_method(*examples)
     
     # finds intersection of all suitable methods
-    suggested_methods = examples.inject([]) do |methods, pair|
-      object, example = pair
+    suggested_methods = examples.inject([]) do |methods, example|
+      object, result, *args = example
             
-      methods << object.suggest_method(example).to_set
+      methods << object.suggest_method(result, *args).to_set
     end.inject { |intersection, set| intersection & set }
         
     if suggested_methods.length < 2
@@ -48,10 +55,10 @@ module MethodFinder
   
   private
   
-  def self.zero_arity_methods(object)
+  def self.methods_by_arity(object, length)
     object_methods = Object.instance_methods
     
-    zero_arity_methods = object.methods.reject { |m| m["!"] || (object.method(m).arity > 0) || object_methods.include?(m) }
+    object.methods.reject { |m| (object.method(m).arity != length) || object_methods.include?(m) }
   end
 end
 

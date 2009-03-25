@@ -2,8 +2,6 @@ Squeak method finder analogue by example for ruby.
 
 http://wiki.squeak.org/squeak/1916
 
-Currently supports only zero-arity selectors (ex: upcase, not [1])
-
 Examples:
 
   irb(main):001:0> "hello".suggest_method("HELLO")
@@ -23,11 +21,20 @@ Examples:
   
 MethodFinder can use several results for find method. Examples:
 
-  irb(main):011:0> MethodFinder.suggest_method(-1.01 => -2, 1.01 => 1)
+  irb(main):011:0> MethodFinder.suggest_method([-1.01, -2], [1.01, 1])
   => "floor"
 
-  irb(main):001:0> MethodFinder.suggest_method(-1.01 => -1, 1.01 => 1)
+  irb(main):001:0> MethodFinder.suggest_method([-1.01, -1], [1.01, 1])
   => ["to_int", "round", "to_i", "prec_i", "truncate"]
+  
+Update: now with arguments
+
+  irb(main):005:0> "hello ".suggest_method("hello world", "world")
+  => ["+", "concat", "<<"]
+  
+  irb(main):003:0> MethodFinder.suggest_method([2, 4, 2], [[2], [2, 2], 2])
+  ./method_finder.rb:20: warning: do not use Fixnums as Symbols
+  => "*"
   
 TODO: 
 
