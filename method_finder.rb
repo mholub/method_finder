@@ -6,7 +6,7 @@ module MethodFinder
   # supports only 0-arity methods
   # METHODS_FOR_REJECT = %w[id type clone new initialize dup freeze send taint extend include eval]
   
-  def suggest_method(example, all = false)
+  def suggest_method(example)
     # filter dangerous methods too
     zero_arity_methods = MethodFinder.zero_arity_methods(self)
     
@@ -21,24 +21,25 @@ module MethodFinder
       end
     end
     
-    unless all
-      zero_arity_methods.find &find_block
+    result = zero_arity_methods.select &find_block
+    if result.length < 2
+      result.first
     else
-      zero_arity_methods.select &find_block
+      result
     end
   end
   
   # examples is a hash with object -> example pairs
-  def self.suggest_method(examples, all = false)
+  def self.suggest_method(examples)
     
     # finds intersection of all suitable methods
     suggested_methods = examples.inject([]) do |methods, pair|
       object, example = pair
             
-      methods << object.suggest_method(example, :all).to_set
+      methods << object.suggest_method(example).to_set
     end.inject { |intersection, set| intersection & set }
         
-    unless all
+    if suggested_methods.length < 2
       suggested_methods.first
     else
       suggested_methods.to_a

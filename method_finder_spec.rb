@@ -4,11 +4,11 @@ require File.join(File.dirname(__FILE__), *%w[method_finder])
 describe MethodFinder do
   describe 'Single suggestions' do
     it 'should suggest upcase here' do
-      "hello".suggest_method("HELLO").should == "upcase"
+      "hello".suggest_method("HELLO").should include("upcase", "swapcase")
     end
     
     it 'should suggest downcase here' do
-      "HELLO".suggest_method("hello").should == "downcase"
+      "HELLO".suggest_method("hello").should include("downcase", "swapcase")
     end
     
     it 'should suggest capitalize here' do
@@ -16,11 +16,11 @@ describe MethodFinder do
     end
     
     it 'should suggest truncate, to_i, to_int, floor' do
-      1.5.suggest_method(1, :all).should include("truncate", "to_i", "to_int", "floor")
+      1.5.suggest_method(1).should include("truncate", "to_i", "to_int", "floor")
     end
     
     it 'should suggest round, ceil' do
-      1.5.suggest_method(2, :all).should include("round", "ceil")
+      1.5.suggest_method(2).should include("round", "ceil")
     end
   end
   
@@ -30,7 +30,7 @@ describe MethodFinder do
     end
     
     it 'should suggest truncate, to_i, to_int, floor' do
-      MethodFinder.suggest_method({-1.01 => -1, 1.01 => 1}, :all).should include("truncate", "to_i", "to_int", "round")
+      MethodFinder.suggest_method(-1.01 => -1, 1.01 => 1).should include("truncate", "to_i", "to_int", "round")
     end
   end
   
